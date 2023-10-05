@@ -13,6 +13,7 @@ WIDTH, HEIGHT = 1920, 1080
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT), DOUBLEBUF)
 pygame.display.set_caption("Out of the box")
+clock = pygame.time.Clock()
 
 TOP_MARGIN, BOTTOM_MARGIN = 100, 200
 BOX_WIDTH, BOX_HEIGHT = WIDTH - 100, HEIGHT - TOP_MARGIN - BOTTOM_MARGIN
@@ -49,6 +50,65 @@ class Item:
         self.id = id
         self.item_type = item_type
         self.state = state
+
+class Player:
+    def __init__(self, x, y, sprite_sheet, game_box):
+        self.animations = ["down", "left", "right", "up", "idle"]
+        self.frames = {animation: [] for animation in self.animations}
+        self.load_frames(sprite_sheet)
+
+        self.animation = "idle"
+        self.frame_index = 0
+        self.image = self.frames[self.animation][self.frame_index]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        self.animation_speed = 0.5
+        self.animation_timer = 0
+        self.game_box = game_box
+
+    def load_frames(self, sprite_sheet):
+        num_rows = 5
+        num_cols = 6
+        scale_factor = 4
+        frame_width = sprite_sheet.get_width() // num_cols
+        frame_height = sprite_sheet.get_height() // num_rows
+
+        for row, animation in enumerate(self.animations):
+            for col in range(num_cols):
+                x = col * frame_width
+                y = row * frame_height
+                subsurface_width = min(frame_width, sprite_sheet.get_width() - x)
+                subsurface_height = min(frame_height, sprite_sheet.get_height() - y)
+                frame = sprite_sheet.subsurface(pygame.Rect(x, y, subsurface_width, subsurface_height))
+                frame = pygame.transform.scale(frame, (subsurface_width * scale_factor, subsurface_height * scale_factor))
+                self.frames[animation].append(frame)
+
+    def update(self, delta_time, dx, dy):
+        self.animation_timer += delta_time
+        if self.animation_timer >= self.animation_speed:
+            self.animation_timer = 0
+            self.frame_index = (self.frame_index + 1) % len(self.frames[self.animation])
+            self.image = self.frames[self.animation][self.frame_index]
+
+    def move(self, dx, dy):
+        if dx > 0:
+            self.animation = "right"
+        elif dx < 0:
+            self.animation = "left"
+        elif dy > 0:
+            self.animation = "down"
+        elif dy < 0:
+            self.animation = "up"
+        else:
+            self.animation = "idle"
+
+        self.rect.move_ip(dx, dy)
+
+        if not self.game_box.contains(self.rect):
+            self.rect.clamp_ip(self.game_box)
+
+    def is_colliding(self, items):
+        return any(self.rect.colliderect(item.rect) for item in items)
 
 def random_position(existing_items):
     return pygame.Rect(random.randint(BOX_X, BOX_X + BOX_WIDTH - 10), 
@@ -189,74 +249,88 @@ def load_next_level():
         pygame.quit()
         sys.exit()
 
-running = True
-clock = pygame.time.Clock()
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-            pygame.quit()
-            sys.exit()
+def main():
+    player = Player(100,
+                    100,
+                    pygame.image.load('assets/player.png'),
+                    level_box_rect)
 
-    keys = pygame.key.get_pressed()
-    current_player_x, current_player_y = player_rect.topleft
+    delta_time = 0
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
 
-    if keys[pygame.K_UP] or keys[pygame.K_w]:
-        player_rect.move_ip(0, -PLAYER_SPEED)
-    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-        player_rect.move_ip(0, PLAYER_SPEED)
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-        player_rect.move_ip(-PLAYER_SPEED, 0)
-    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-        player_rect.move_ip(PLAYER_SPEED, 0)
+        keys = pygame.key.get_pressed()
+        dx = dy = 0
 
-    if not level_box_rect.contains(player_rect):
-        player_rect.topleft = (current_player_x, current_player_y)
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            dy = -PLAYER_SPEED
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            dy = PLAYER_SPEED
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            dx = -PLAYER_SPEED
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            dx = PLAYER_SPEED
 
-    for item in level_items:
-        if player_rect.colliderect(item.rect):
+        player.move(dx, dy)
+
+        for item in level_items:
+            if player.is_colliding([item]):
+                if item.item_type == "gate":
+                    add_item_to_inventory(item)
+                    level_items.remove(item)
+                elif item.item_type == "qubit":
+                    if keys[pygame.K_1]:
+                        use_gate_on_qubit(0, item)
+                    elif keys[pygame.K_2]:
+                        use_gate_on_qubit(1, item)
+                    elif keys[pygame.K_3]:
+                        use_gate_on_qubit(2, item)
+
+        clock.tick(60)
+
+        screen.fill(BLACK)
+        pygame.draw.rect(screen, BLUE, level_box_rect)
+
+        for item in level_items:
+            pygame.draw.rect(screen, item.color, item.rect)
             if item.item_type == "gate":
-                add_item_to_inventory(item)
-                level_items.remove(item)
+                text_surface = FONT.render(item.id, True, WHITE)
             elif item.item_type == "qubit":
-                if keys[pygame.K_1]:
-                    use_gate_on_qubit(0, item)
-                elif keys[pygame.K_2]:
-                    use_gate_on_qubit(1, item)
-                elif keys[pygame.K_3]:
-                    use_gate_on_qubit(2, item)
+                text_surface = FONT.render(f"q{item.id}", True, WHITE)
+            screen.blit(text_surface, (item.rect.x, item.rect.y))
 
-    clock.tick(60)
+        screen.blit(player.image, player.rect.topleft)
 
-    screen.fill(BLACK)
-    pygame.draw.rect(screen, BLUE, level_box_rect)
+        if not is_game_over():
+            update_poison_color()
+            pygame.draw.rect(poison_overlay, poison_color, (0, 0, WIDTH, HEIGHT))
+            screen.blit(poison_overlay, (BOX_X, BOX_Y))
 
-    for item in level_items:
-        pygame.draw.rect(screen, item.color, item.rect)
-        if item.item_type == "gate":
-            text_surface = FONT.render(item.id, True, WHITE)
-        elif item.item_type == "qubit":
-            text_surface = FONT.render(f"q{item.id}", True, WHITE)
-        screen.blit(text_surface, (item.rect.x, item.rect.y))
+        draw_inventory()
+        draw_states()
+        pygame.display.flip()
 
-    pygame.draw.rect(screen, (255, 0, 0), player_rect)
+        if is_game_over():
+            reset_level()
 
-    if not is_game_over():
-        update_poison_color()
-        pygame.draw.rect(poison_overlay, poison_color, (0, 0, WIDTH, HEIGHT))
-        screen.blit(poison_overlay, (BOX_X, BOX_Y))
+        if check_level_completion():
+            print("Level completed!")
+            pygame.time.delay(3000)
+            load_next_level()
 
-    draw_inventory()
-    draw_states()
-    pygame.display.flip()
+        current_time = pygame.time.get_ticks()
+        delta_time = (current_time - delta_time) / 1000.0
+        delta_time = min(delta_time, 0.1)
 
-    if is_game_over():
-        reset_level()
+        player.update(delta_time, dx, dy)
 
-    if check_level_completion():
-        print("Level completed!")
-        pygame.time.delay(3000)
-        load_next_level()
+    pygame.quit()
 
-pygame.quit()
+if __name__ == "__main__":
+    main()
