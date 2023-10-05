@@ -110,6 +110,97 @@ class Player:
     def is_colliding(self, items):
         return any(self.rect.colliderect(item.rect) for item in items)
 
+class Qubit(pygame.sprite.Sprite):
+    def __init__(self, sprite_sheet, game_box, id):
+        super().__init__()
+        self.animations = ["down", "left", "right", "up"]
+        self.frames = {animation: [] for animation in self.animations}
+        self.load_frames(sprite_sheet)
+
+        self.animation = random.choice(self.animations)
+        self.frame_index = 0
+        self.image = self.frames[self.animation][self.frame_index]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.random_position()
+        self.animation_speed = 0.6
+        self.animation_timer = 0
+        self.game_box = game_box
+        self.id = id
+
+        self.direction = random.choice(self.animations)
+
+    def load_frames(self, sprite_sheet):
+        num_rows = 4
+        num_cols = 3
+        scale_factor = 4
+        frame_width = sprite_sheet.get_width() // num_cols
+        frame_height = sprite_sheet.get_height() // num_rows
+
+        for row, animation in enumerate(self.animations):
+            for col in range(num_cols):
+                x = col * frame_width
+                y = row * frame_height
+                subsurface_width = min(frame_width, sprite_sheet.get_width() - x)
+                subsurface_height = min(frame_height, sprite_sheet.get_height() - y)
+                frame = sprite_sheet.subsurface(pygame.Rect(x, y, subsurface_width, subsurface_height))
+                frame = pygame.transform.scale(frame, (subsurface_width * scale_factor, subsurface_height * scale_factor))
+                self.frames[animation].append(frame)
+
+    def move(self, dx, dy):
+        if dx > 0:
+            new_direction = "right"
+        elif dx < 0:
+            new_direction = "left"
+        elif dy > 0:
+            new_direction = "down"
+        elif dy < 0:
+            new_direction = "up"
+
+        self.direction = new_direction
+        self.animation = new_direction
+
+        new_rect = self.rect.move(dx, dy)
+        if self.game_box.contains(new_rect):
+            self.rect = new_rect
+
+    def update(self, delta_time, dx, dy):
+        self.animation_timer += delta_time
+        if self.animation_timer >= self.animation_speed:
+            self.animation_timer = 0
+            self.frame_index = (self.frame_index + 1) % len(self.frames[self.animation])
+            self.image = self.frames[self.animation][self.frame_index]
+
+        if self.direction == "up":
+            self.move(0, -1)
+        elif self.direction == "down":
+            self.move(0, 1)
+        elif self.direction == "left":
+            self.move(-1, 0)
+        elif self.direction == "right":
+            self.move(1, 0)
+
+        if random.random() < 0.01:
+            self.direction = random.choice(self.animations)
+
+        if not self.game_box.contains(self.rect):
+            self.rect.clamp_ip(self.game_box)
+
+    def random_position(self):
+        return (random.randint(BOX_X, BOX_X + BOX_WIDTH - 10), 
+                random.randint(BOX_Y, BOX_Y + BOX_HEIGHT - 10))
+
+class Gate(pygame.sprite.Sprite):
+    def __init__(self, sprite_sheet, game_box, id):
+        super().__init__()
+        self.id = id
+        self.sprite = sprite_sheet
+        self.rect = self.random_position()
+
+    def random_position(self):
+        x = random.randint(BOX_X, BOX_X + BOX_WIDTH - 10)
+        y = random.randint(BOX_Y, BOX_Y + BOX_HEIGHT - 10)
+        return pygame.Rect(x, y, 20, 20)
+
 def random_position(existing_items):
     return pygame.Rect(random.randint(BOX_X, BOX_X + BOX_WIDTH - 10), 
                        random.randint(BOX_Y, BOX_Y + BOX_HEIGHT - 10), 
@@ -133,17 +224,27 @@ def create_quantum_circuit(qbits):
 qubits = []
 gates = []
 
+qubit_sprite_sheet = pygame.image.load('assets/qubit.png')
+gate_sprite_sheet = pygame.image.load('assets/qubit.png')
+
+def load_qubits(sprite_sheet, num_qubits):
+    qubits = []
+    for i in range(num_qubits):
+        qubit = Qubit(sprite_sheet, level_box_rect, i)
+        qubits.append(qubit)
+    return qubits
+
 level_data = {
     1: {
-        "qubits": [create_item(0, qubits, 20, MAGENTA, "qubit")],
-        "gates": [create_item("X", gates, 40, GREEN, "gate")],
+        "qubits": load_qubits(qubit_sprite_sheet, 1),
+        "gates": [Gate(gate_sprite_sheet, level_box_rect, "X")],
         "goal_state": Statevector.from_label('1'),
         "current_state": Statevector.from_label('0' * 1),
         "quantum_circuit": create_quantum_circuit(1)
     },
     2: {
-        "qubits": [create_item(0, qubits, 20, MAGENTA, "qubit"), create_item(1, qubits, 20, MAGENTA, "qubit")],
-        "gates": [create_item("X", gates, 40, GREEN, "gate"), create_item("H", gates, 40, GREEN, "gate")],
+        "qubits": load_qubits(qubit_sprite_sheet, 2),
+        "gates": [Gate(gate_sprite_sheet, level_box_rect, "X"), Gate(gate_sprite_sheet, level_box_rect, "H")],
         "goal_state": Statevector.from_label('01'),
         "current_state": Statevector.from_label('0' * 2),
         "quantum_circuit": create_quantum_circuit(2)
@@ -215,9 +316,7 @@ def draw_states():
     state_needs_update = False
 
 def check_level_completion():
-    goal_state = current_data.get("goal_state", "")
-    current_qubit_states = ["".join(qubit.state) for qubit in current_data["qubits"]]
-    return "".join(current_qubit_states) == goal_state
+    return False
 
 def update_poison_color():
     global poison_alpha, poison_color
@@ -281,10 +380,10 @@ def main():
 
         for item in level_items:
             if player.is_colliding([item]):
-                if item.item_type == "gate":
+                if isinstance(item, Gate):
                     add_item_to_inventory(item)
                     level_items.remove(item)
-                elif item.item_type == "qubit":
+                elif isinstance(item, Qubit):
                     if keys[pygame.K_1]:
                         use_gate_on_qubit(0, item)
                     elif keys[pygame.K_2]:
@@ -297,13 +396,12 @@ def main():
         screen.fill(BLACK)
         pygame.draw.rect(screen, BLUE, level_box_rect)
 
-        for item in level_items:
-            pygame.draw.rect(screen, item.color, item.rect)
-            if item.item_type == "gate":
-                text_surface = FONT.render(item.id, True, WHITE)
-            elif item.item_type == "qubit":
-                text_surface = FONT.render(f"q{item.id}", True, WHITE)
-            screen.blit(text_surface, (item.rect.x, item.rect.y))
+        for qubit in current_data["qubits"]:
+            qubit.update(delta_time, dx, dy)
+            screen.blit(qubit.image, qubit.rect.topleft)
+
+        for gate in current_data["gates"]:
+            screen.blit(gate.sprite, gate.rect.topleft)
 
         screen.blit(player.image, player.rect.topleft)
 
