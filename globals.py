@@ -2,10 +2,11 @@ import pygame
 
 WIDTH, HEIGHT = 1920, 1080
 
-TOP_MARGIN, BOTTOM_MARGIN = 100, 200
-BOX_WIDTH, BOX_HEIGHT = WIDTH - 100, HEIGHT - TOP_MARGIN - BOTTOM_MARGIN
+TOP_MARGIN, BOTTOM_MARGIN = 250, 200
+# BOX_WIDTH, BOX_HEIGHT = WIDTH - 100, HEIGHT - TOP_MARGIN - BOTTOM_MARGIN
+BOX_WIDTH = 1430
+BOX_HEIGHT = 544
 BOX_X, BOX_Y = (WIDTH - BOX_WIDTH) // 2, TOP_MARGIN
-SLOT_WIDTH, SLOT_HEIGHT = 40, 40
 
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
@@ -17,12 +18,12 @@ BLACK = (0, 0, 0)
 level_data = {
     1: {
         "qubits": 1,
-        "gates": ['X'],
+        "gates": ['x'],
         "goal_state": '1',
     },
     2: {
         "qubits": 2,
-        "gates": ['X', 'H'],
+        "gates": ['x', 'h'],
         "goal_state": '01',
     }
 }

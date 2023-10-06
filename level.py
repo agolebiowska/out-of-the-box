@@ -3,7 +3,6 @@ import pygame
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, execute
 from qiskit.quantum_info import Statevector
 from qiskit.visualization import plot_bloch_multivector
-import matplotlib.pyplot as plt
 import matplotlib.backends.backend_agg as agg
 import numpy as np
 
@@ -12,6 +11,7 @@ from entities import Qubit, Gate
 
 class Level:
     def __init__(self, qubits_num, gates, goal_state):
+        self.box = pygame.image.load("assets/box.png")
         self.box_rect = pygame.Rect(BOX_X, BOX_Y, BOX_WIDTH, BOX_HEIGHT)
         self.goal_state = Statevector.from_label(goal_state)
         self.qubits = self.load_qubits(qubits_num)
@@ -19,15 +19,17 @@ class Level:
         self.current_state = Statevector.from_label("0" * qubits_num)
         self.quantum_circuit = self.create_quantum_circuit(qubits_num)
         self.items = self.qubits + self.gates
-        self.inventory = [None, None, None]
+        self.inventory = [None, None, None, None, None]
         self.state_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         self.state_needs_update = True
         self.goal_state_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         self.goal_state_show = True
         self.poison_timer = 300
-        self.poison_color = (0, 255, 0)
         self.poison_alpha = 0
-        self.poison_overlay = pygame.Surface((BOX_WIDTH, BOX_HEIGHT), pygame.SRCALPHA)
+        self.poison = pygame.image.load("assets/poison.png").convert_alpha()
+        self.poison = pygame.transform.scale(self.poison, (WIDTH, HEIGHT))
+        self.poison_overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        self.font = pygame.font.Font(None, 36)
 
     def load_qubits(self, qubits_num):
         qubits = []
@@ -36,9 +38,9 @@ class Level:
             qubits.append(qubit)
         return qubits
 
-    def load_gates(self, gates):
+    def load_gates(self, gate_ids):
         gates = []
-        for id in gates:
+        for id in gate_ids:
             gate = Gate(id, self.box_rect)
             gates.append(gate)
         return gates
@@ -49,40 +51,49 @@ class Level:
         qc = QuantumCircuit(q, c)
         return qc
 
-    def use_gate_on_qubit(gate_index, qubit, inventory):
-        if inventory[gate_index] is not None:
-            selected_gate = inventory[gate_index]
-            qc = self.quantum_circuit
+    def use_gate_on_qubit(self, gate_index, qubit):
+        if self.inventory[gate_index] is not None:
+            selected_gate = self.inventory[gate_index]
 
-            if selected_gate == "X":
-                qc.x(qubit.id)
-            elif selected_gate == "H":
-                qc.h(qubit.id)
+            if selected_gate.id == "x":
+                self.quantum_circuit.x(qubit.id)
+            elif selected_gate.id == "h":
+                self.quantum_circuit.h(qubit.id)
 
-        backend = Aer.get_backend("statevector_simulator")
-        result = backend.run(qc).result()
-        psi = result.get_statevector(qc)
-        self.current_state = psi
-        self.state_needs_update = True
-        inventory[selected_gate_index] = None
+            backend = Aer.get_backend("statevector_simulator")
+            result = backend.run(self.quantum_circuit).result()
+            psi = result.get_statevector(self.quantum_circuit)
+            self.current_state = psi
+            self.state_needs_update = True
+            self.inventory[gate_index] = None
+
 
     def draw_inventory(self, screen):
+        SLOT_WIDTH, SLOT_HEIGHT = 50, 50
+        inventory_width = len(self.inventory) * SLOT_WIDTH
+        start_x = (WIDTH - inventory_width) // 2
+
         for i, item in enumerate(self.inventory):
-            pygame.draw.rect(
-                screen, WHITE, (i * SLOT_WIDTH, 0, SLOT_WIDTH, SLOT_HEIGHT), 2
-            )
-            if item is not None:
-                text = FONT.render(item, True, WHITE)
-                screen.blit(text, (i * SLOT_WIDTH + 10, 10))
+            slot_x = start_x + i * SLOT_WIDTH
+            slot_y = HEIGHT - 150
+
+            pygame.draw.rect(screen, (50, 50, 50), (slot_x, slot_y, SLOT_WIDTH, SLOT_HEIGHT))
+            pygame.draw.rect(screen, (128, 128, 128), (slot_x+3, slot_y+3, SLOT_WIDTH-6, SLOT_HEIGHT-6), width=3)
+            pygame.draw.rect(screen, (200, 200, 200), (slot_x, slot_y, SLOT_WIDTH, SLOT_HEIGHT), width=3)
+
+            if item is not None and isinstance(item, Gate):
+                sprite_x = slot_x + (SLOT_WIDTH - item.sprite.get_width()) // 2
+                sprite_y = slot_y + (SLOT_HEIGHT - item.sprite.get_height()) // 2
+                screen.blit(item.sprite, (sprite_x, sprite_y))
 
     def add_item_to_inventory(self, item):
         for i, slot in enumerate(self.inventory):
             if slot is None:
-                self.inventory[i] = item.id
+                self.inventory[i] = item
                 return
 
     def plot_bloch_sphere(self, state, label):
-        fig = plot_bloch_multivector(state, figsize=(1.6, 1.6))
+        fig = plot_bloch_multivector(state, figsize=(2,2))
         canvas = agg.FigureCanvasAgg(fig)
         canvas.draw()
         renderer = canvas.get_renderer()
@@ -92,14 +103,27 @@ class Level:
 
     def draw_states(self, screen):
         if self.goal_state_show:
-            self.goal_state_surface = self.plot_bloch_sphere(self.goal_state, "test")
+            self.goal_state_surface = self.plot_bloch_sphere(self.goal_state, "goal")
         if self.state_needs_update:
-            self.state_surface = self.plot_bloch_sphere(self.current_state, "test")
-        screen.blit(self.goal_state_surface, (WIDTH - 400, HEIGHT - BOTTOM_MARGIN))
-        screen.blit(self.state_surface, (100, HEIGHT - BOTTOM_MARGIN))
+            self.state_surface = self.plot_bloch_sphere(self.current_state, "current")
+        goal_state_x = (WIDTH + len(self.inventory) * 50) // 2
+        current_state_x = (WIDTH - len(self.inventory) * 50) // 2 - self.state_surface.get_width()
+        y_position = HEIGHT - BOTTOM_MARGIN
+
+        screen.blit(self.goal_state_surface, (goal_state_x, y_position))
+        screen.blit(self.state_surface, (current_state_x, y_position))
         self.goal_state_show = False
         self.state_needs_update = False
 
+    def draw_poison_bar(self, screen):
+        progress_bar_width = 255
+        progress_bar_height = 20
+        progress_bar_x = (WIDTH - progress_bar_width) // 2
+        progress_bar_y = 30
+        pygame.draw.rect(screen, WHITE, (progress_bar_x - 2, progress_bar_y - 2, progress_bar_width + 4, progress_bar_height + 4))
+        pygame.draw.rect(screen, GREEN, (progress_bar_x, progress_bar_y, self.poison_alpha, progress_bar_height))
+
     def update_poison_color(self):
         self.poison_alpha += 0.1
-        self.poison_color = (0, 255, 0, self.poison_alpha)
+        self.poison.set_alpha(self.poison_alpha)
+
