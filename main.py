@@ -12,6 +12,10 @@ from level import Level
 
 MENU = 0
 PLAYING = 1
+WON = 2
+DIED = 3
+
+game_state = MENU
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT), DOUBLEBUF)
@@ -20,7 +24,7 @@ clock = pygame.time.Clock()
 
 plt.style.use('dark_background')
 
-current_level = 2
+current_level = 1
 current_level_data = level_data[current_level]
 level = Level(qubits_num=current_level_data["qubits"],
               gates=current_level_data["gates"],
@@ -28,11 +32,14 @@ level = Level(qubits_num=current_level_data["qubits"],
 
 player = Player(100, 100, level.box_rect)
 
+menu = pygame.image.load("assets/menu.png")
+
 def display_menu(screen, selected_option):
     screen.fill(BLACK)
-    font = pygame.font.Font(None, 36)
-    start_text = font.render("START", True, RED if selected_option == 0 else WHITE)
-    quit_text = font.render("QUIT", True, RED if selected_option == 1 else WHITE)
+    screen.blit(menu, (0,0))
+    font = pygame.font.Font(None, 50)
+    start_text = font.render("START", True, LIGHT_BROWN if selected_option == 0 else WHITE)
+    quit_text = font.render("QUIT", True, LIGHT_BROWN if selected_option == 1 else WHITE)
     screen_width, screen_height = screen.get_size()
     start_x = (screen_width - start_text.get_width()) // 2
     start_y = (screen_height - start_text.get_height()) // 2 - 50
@@ -60,20 +67,18 @@ def handle_menu_input(selected_option):
 
     return selected_option, MENU
 
-def check_level_completion():
-    return False
-
 def is_game_over():
     return level.poison_alpha >= 255
 
 def reset_level():
-    global level
+    global current_level, current_level_data, level
+    current_level_data = level_data[current_level]
     level = Level(current_level_data["qubits"],
                   current_level_data["gates"],
                   current_level_data["goal_state"])
 
 def load_next_level():
-    global current_level, current_level_data
+    global current_level, current_level_data, level
     current_level += 1
     if current_level <= len(level_data):
         current_level_data = level_data[current_level]
@@ -81,15 +86,15 @@ def load_next_level():
                       current_level_data["gates"],
                       current_level_data["goal_state"])
     else:
+        global game_state
+        game_state = WON
         print("Congratulations! You've completed all levels.")
-        pygame.quit()
-        sys.exit()
 
 
 def main():
+    global game_state, current_level
     delta_time = 0
     running = True
-    game_state = MENU
     selected_option = 0
     while running:
         for event in pygame.event.get():
@@ -146,12 +151,7 @@ def main():
             screen.blit(player.sprite, player.rect.topleft)
 
             if is_game_over():
-                reset_level()
-
-            if check_level_completion():
-                print("Level completed!")
-                pygame.time.delay(3000)
-                load_next_level()
+                game_state = DIED
 
             level.draw_inventory(screen)
             level.draw_states(screen)
@@ -170,6 +170,55 @@ def main():
             delta_time = min(delta_time, 0.1)
 
             player.update(delta_time, dx, dy)
+
+            if level.is_completed():
+                print("Level completed!")
+                pygame.time.delay(1000)
+                load_next_level()
+
+        elif game_state == WON:
+            font = pygame.font.Font(None, 100)
+            text = font.render("YOU WON", True, WHITE)
+            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            screen.blit(text, text_rect)
+            pygame.display.flip()
+            font = pygame.font.Font(None, 36)
+            return_text = font.render("Press Enter to return to main menu", True, WHITE)
+            return_text_rect = return_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
+            screen.blit(return_text, return_text_rect)
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == KEYDOWN:
+                    if event.key == K_RETURN:
+                        current_level = 1
+                        game_state = MENU
+                        selected_option = 0
+                        reset_level()
+
+        elif game_state == DIED:
+            font = pygame.font.Font(None, 100)
+            text = font.render("YOU DIED", True, RED)
+            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            screen.blit(text, text_rect)
+            pygame.display.flip()
+            font = pygame.font.Font(None, 36)
+            return_text = font.render("Press Enter to restart", True, WHITE)
+            return_text_rect = return_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
+            screen.blit(return_text, return_text_rect)
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == KEYDOWN:
+                    if event.key == K_RETURN:
+                        game_state = PLAYING
+                        reset_level()
 
     pygame.quit()
 

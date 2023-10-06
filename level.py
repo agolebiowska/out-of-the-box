@@ -124,6 +124,9 @@ class Level:
         pygame.draw.rect(screen, GREEN, (progress_bar_x, progress_bar_y, self.poison_alpha, progress_bar_height))
 
     def update_poison_color(self):
-        self.poison_alpha += 0.1
+        self.poison_alpha += 1
         self.poison.set_alpha(self.poison_alpha)
+
+    def is_completed(self):
+        return self.current_state.equiv(self.goal_state)
 
