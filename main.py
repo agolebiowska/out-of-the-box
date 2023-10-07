@@ -16,6 +16,7 @@ from level import Level
 # 3. Add items for player to take, like temporary speed, ctrl+z etc.
 # 4. Adjust poison speed per level.
 # 5. Make kitty in the top corner say mean things - maybe wrong tips?
+# 6. Make difficulty levels to choose (poison speed)
 
 MENU = 0
 PLAYING = 1
@@ -53,9 +54,9 @@ def display_menu(screen, selected_option):
     screen.blit(menu, (0,0))
     font = pygame.font.Font(font_file, 50)
     title_font = pygame.font.Font(font_file, 100)
-    start_text = font.render("START", True, (255, 106, 151) if selected_option == 0 else WHITE)
-    quit_text = font.render("QUIT", True, (255, 106, 151) if selected_option == 1 else WHITE)
-    title = title_font.render("Out of the Box", True, (189, 72, 130))
+    start_text = font.render("START", True, PURPLE if selected_option == 0 else WHITE)
+    quit_text = font.render("QUIT", True,  PURPLE if selected_option == 1 else WHITE)
+    title = title_font.render("Out of the Box", True, WHITE)
     screen_width, screen_height = screen.get_size()
     start_x = (screen_width - start_text.get_width()) // 2
     start_y = (screen_height - start_text.get_height()) // 2 - 50

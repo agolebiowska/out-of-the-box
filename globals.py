@@ -8,12 +8,13 @@ BOX_HEIGHT = 544
 BOX_X, BOX_Y = (WIDTH - BOX_WIDTH) // 2, TOP_MARGIN
 font_file = "assets/joystix.otf"
 
-WHITE = (255, 255, 235)
+WHITE = (255, 255, 234)
 BLUE = (77, 166, 255)
 MAGENTA = (255, 107, 151)
 GREEN = (142, 222, 93)
 RED = (176, 48, 93)
 BLACK = (39, 39, 54)
+PURPLE = (128, 54, 106)
 
 level_data = {
     1: {
