@@ -1,0 +1,38 @@
+### FIGURE
+figure.facecolor: 272736
+figure.dpi: 100
+figure.titlesize: 14
+figure.titleweight: bold
+
+### LINES
+lines.linewidth: 1.5
+
+### PATCHES
+patch.facecolor: 272736
+
+### LEGEND
+legend.fontsize: 12
+
+### TICKS
+xtick.direction: out
+ytick.direction: out
+
+### FONTS
+font.family: monospace
+font.sans-serif: Courier New, Courier, monospace
+font.weight: bold
+font.size: 12
+
+text.color: ffffeb
+
+### AXES
+axes.grid: False
+axes.facecolor: 272736
+axes.linewidth: 1.0
+axes.titlesize: 12
+axes.titleweight: bold
+axes.labelsize: 12
+axes.labelweight: bold
+axes.labelcolor: ffffeb
+axes.spines.top: True
+axes.spines.right: True

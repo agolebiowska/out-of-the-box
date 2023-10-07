@@ -78,7 +78,7 @@ class Qubit():
         self.level_box = level_box
         self.id = id
 
-        self.font = pygame.font.Font(None, 20)
+        self.font = pygame.font.Font(font_file, 20)
         self.id_text = self.font.render(f"Q{self.id}", True, (255, 255, 255))
         self.id_text_rect = self.id_text.get_rect()
         self.id_text_rect.midtop = (self.rect.centerx, self.rect.top - 10)
@@ -179,8 +179,6 @@ class Gate():
                 frame = sprite_sheet.subsurface(pygame.Rect(x, y, subsurface_width, subsurface_height))
                 frame = pygame.transform.scale(frame, (subsurface_width * scale_factor, subsurface_height * scale_factor))
                 self.frames[animation].append(frame)
-
-
 
     def random_position(self):
         x = random.randint(BOX_X, BOX_X + BOX_WIDTH - 10)

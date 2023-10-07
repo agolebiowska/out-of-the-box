@@ -22,9 +22,9 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT), DOUBLEBUF)
 pygame.display.set_caption("Out of the box")
 clock = pygame.time.Clock()
 
-plt.style.use('dark_background')
+plt.style.use('bloch.mplstyle')
 
-current_level = 1
+current_level = 2
 current_level_data = level_data[current_level]
 level = Level(qubits_num=current_level_data["qubits"],
               gates=current_level_data["gates"],
@@ -33,18 +33,24 @@ level = Level(qubits_num=current_level_data["qubits"],
 player = Player(100, 100, level.box_rect)
 
 menu = pygame.image.load("assets/menu.png")
+menu = pygame.transform.scale(menu, (1920,1080))
 
 def display_menu(screen, selected_option):
     screen.fill(BLACK)
     screen.blit(menu, (0,0))
-    font = pygame.font.Font(None, 50)
-    start_text = font.render("START", True, LIGHT_BROWN if selected_option == 0 else WHITE)
-    quit_text = font.render("QUIT", True, LIGHT_BROWN if selected_option == 1 else WHITE)
+    font = pygame.font.Font(font_file, 50)
+    title_font = pygame.font.Font(font_file, 100)
+    start_text = font.render("START", True, (255, 106, 151) if selected_option == 0 else WHITE)
+    quit_text = font.render("QUIT", True, (255, 106, 151) if selected_option == 1 else WHITE)
+    title = title_font.render("Out of the Box", True, (189, 72, 130))
     screen_width, screen_height = screen.get_size()
     start_x = (screen_width - start_text.get_width()) // 2
     start_y = (screen_height - start_text.get_height()) // 2 - 50
     quit_x = (screen_width - quit_text.get_width()) // 2
     quit_y = (screen_height - quit_text.get_height()) // 2 + 50
+    title_x = (screen_width - title.get_width()) // 2
+    title_y = (screen_height - title.get_height()) // 2 - 300
+    screen.blit(title, (title_x, title_y))
     screen.blit(start_text, (start_x, start_y))
     screen.blit(quit_text, (quit_x, quit_y))
     pygame.display.flip()
@@ -150,9 +156,6 @@ def main():
 
             screen.blit(player.sprite, player.rect.topleft)
 
-            if is_game_over():
-                game_state = DIED
-
             level.draw_inventory(screen)
             level.draw_states(screen)
 
@@ -176,13 +179,16 @@ def main():
                 pygame.time.delay(1000)
                 load_next_level()
 
+            if is_game_over() or (len(level.gates) <= 0 and all(v is None for v in level.inventory)):
+                game_state = DIED
+
         elif game_state == WON:
-            font = pygame.font.Font(None, 100)
+            font = pygame.font.Font(font_file, 100)
             text = font.render("YOU WON", True, WHITE)
             text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             screen.blit(text, text_rect)
             pygame.display.flip()
-            font = pygame.font.Font(None, 36)
+            font = pygame.font.Font(font_file, 36)
             return_text = font.render("Press Enter to return to main menu", True, WHITE)
             return_text_rect = return_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
             screen.blit(return_text, return_text_rect)
@@ -200,12 +206,12 @@ def main():
                         reset_level()
 
         elif game_state == DIED:
-            font = pygame.font.Font(None, 100)
+            font = pygame.font.Font(font_file, 100)
             text = font.render("YOU DIED", True, RED)
             text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             screen.blit(text, text_rect)
             pygame.display.flip()
-            font = pygame.font.Font(None, 36)
+            font = pygame.font.Font(font_file, 36)
             return_text = font.render("Press Enter to restart", True, WHITE)
             return_text_rect = return_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
             screen.blit(return_text, return_text_rect)
