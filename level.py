@@ -5,6 +5,7 @@ from qiskit.quantum_info import Statevector
 from qiskit.visualization import plot_state_qsphere
 import matplotlib.backends.backend_agg as agg
 import numpy as np
+import matplotlib.pyplot as plt
 
 from globals import *
 from entities import Qubit, Gate
@@ -145,6 +146,7 @@ class Level:
         goal_text_x = goal_state_x + self.goal_state_surface.get_width()
         screen.blit(state_text, (state_text_x, HEIGHT - 160))
         screen.blit(goal_text, (goal_text_x, HEIGHT - 160))
+        plt.close()
 
     def draw_poison_bar(self, screen):
         progress_bar_width = 255
@@ -167,11 +169,12 @@ class Level:
                 all(v is None for v in self.inventory) and
                 np.all(current_state_rounded == goal_state_rounded))
 
-        font = pygame.font.Font(font_file, 24)
-        current_state_x = (WIDTH - len(self.inventory) * 64) // 2 - self.state_surface.get_width()
-        state_text = font.render("Current state >", True, GREEN)
-        state_text_x = current_state_x - self.state_surface.get_width()
-        screen.blit(state_text, (state_text_x, HEIGHT - 160))
+        if is_completed:
+            font = pygame.font.Font(font_file, 24)
+            current_state_x = (WIDTH - len(self.inventory) * 64) // 2 - self.state_surface.get_width()
+            state_text = font.render("Current state >", True, GREEN)
+            state_text_x = current_state_x - self.state_surface.get_width()
+            screen.blit(state_text, (state_text_x, HEIGHT - 160))
 
         return is_completed
 

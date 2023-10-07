@@ -10,6 +10,13 @@ from entities import *
 from globals import *
 from level import Level
 
+# todo:
+# 1. Huge list of possible levels with difficulty and randomly choosing them
+# 2. Increase qubits speed with levels
+# 3. Add items for player to take, like temporary speed, ctrl+z etc.
+# 4. Adjust poison speed per level.
+# 5. Make kitty in the top corner say mean things - maybe wrong tips?
+
 MENU = 0
 PLAYING = 1
 WON = 2
@@ -21,6 +28,9 @@ pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT), DOUBLEBUF)
 pygame.display.set_caption("Out of the box")
 clock = pygame.time.Clock()
+
+pygame.mixer.music.load('assets/music_3.mp3')
+pygame.mixer.music.play(-1)
 
 plt.style.use('bloch.mplstyle')
 
@@ -34,6 +44,9 @@ player = Player(100, 100, level.box_rect)
 
 menu = pygame.image.load("assets/menu.png")
 menu = pygame.transform.scale(menu, (1920,1080))
+
+kitty_corner = pygame.image.load("assets/kitty_corner.png")
+tail_corner = pygame.image.load("assets/tail_corner.png")
 
 def display_menu(screen, selected_option):
     screen.fill(BLACK)
@@ -159,6 +172,8 @@ def main():
                 qubit.draw(screen)
 
             screen.blit(player.sprite, player.rect.topleft)
+            screen.blit(kitty_corner, (0, 0))
+            screen.blit(tail_corner, (WIDTH - tail_corner.get_width(), HEIGHT - tail_corner.get_height()))
 
             if not is_game_over():
                 level.update_poison_color()

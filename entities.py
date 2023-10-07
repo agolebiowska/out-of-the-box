@@ -8,7 +8,7 @@ class Player:
         self.animations = ["down", "left", "right", "up", "idle"]
         self.frames = {animation: [] for animation in self.animations}
         self.load_frames(pygame.image.load('assets/player.png'))
-        self.move_speed = 5
+        self.move_speed = 7
         self.animation = "idle"
         self.frame_index = 0
         self.sprite = self.frames[self.animation][self.frame_index]
@@ -67,6 +67,7 @@ class Qubit():
         self.animations = ["down", "left", "right", "up"]
         self.frames = {animation: [] for animation in self.animations}
         self.load_frames(pygame.image.load('assets/qubit.png'))
+        self.move_speed = 8
 
         self.animation = random.choice(self.animations)
         self.frame_index = 0
@@ -127,13 +128,13 @@ class Qubit():
             self.sprite = self.frames[self.animation][self.frame_index]
 
         if self.direction == "up":
-            self.move(0, -2)
+            self.move(0, -self.move_speed)
         elif self.direction == "down":
-            self.move(0, 2)
+            self.move(0, self.move_speed)
         elif self.direction == "left":
-            self.move(-2, 0)
+            self.move(-self.move_speed, 0)
         elif self.direction == "right":
-            self.move(2, 0)
+            self.move(self.move_speed, 0)
 
         if random.random() < 0.01:
             self.direction = random.choice(self.animations)
