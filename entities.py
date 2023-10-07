@@ -73,7 +73,7 @@ class Qubit():
         self.sprite = self.frames[self.animation][self.frame_index]
         self.rect = self.sprite.get_rect()
         self.rect.topleft = self.random_position()
-        self.animation_speed = 0.6
+        self.animation_speed = 0.4
         self.animation_timer = 0
         self.level_box = level_box
         self.id = id
@@ -127,13 +127,13 @@ class Qubit():
             self.sprite = self.frames[self.animation][self.frame_index]
 
         if self.direction == "up":
-            self.move(0, -1)
+            self.move(0, -2)
         elif self.direction == "down":
-            self.move(0, 1)
+            self.move(0, 2)
         elif self.direction == "left":
-            self.move(-1, 0)
+            self.move(-2, 0)
         elif self.direction == "right":
-            self.move(1, 0)
+            self.move(2, 0)
 
         if random.random() < 0.01:
             self.direction = random.choice(self.animations)

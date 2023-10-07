@@ -2,7 +2,7 @@ import pygame
 
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, execute
 from qiskit.quantum_info import Statevector
-from qiskit.visualization import plot_bloch_multivector
+from qiskit.visualization import plot_state_qsphere
 import matplotlib.backends.backend_agg as agg
 import numpy as np
 
@@ -14,7 +14,7 @@ class Level:
         self.box = pygame.image.load("assets/box.png")
         self.box = pygame.transform.scale(self.box, (1820, 780))
         self.box_rect = pygame.Rect(BOX_X, BOX_Y, BOX_WIDTH, BOX_HEIGHT)
-        self.goal_state = Statevector.from_label(goal_state)
+        self.goal_state = Statevector(np.array(goal_state))
         self.qubits = self.load_qubits(qubits_num)
         self.gates = self.load_gates(gates)
         self.current_state = Statevector.from_label("0" * qubits_num)
@@ -32,6 +32,7 @@ class Level:
         self.poison_overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         self.font = pygame.font.Font(font_file, 36)
         self.slot_image = pygame.image.load("assets/slot.png")
+        self.pacz = pygame.image.load("assets/pacz.png")
 
     def load_qubits(self, qubits_num):
         qubits = []
@@ -61,9 +62,35 @@ class Level:
                 self.quantum_circuit.x(qubit.id)
             elif selected_gate.id == "h":
                 self.quantum_circuit.h(qubit.id)
+            elif selected_gate.id == "cx":
+                if len(self.qubits) == 2:
+                    control_qubit = self.qubits[0]
+                    target_qubit = self.qubits[1]
+                    self.quantum_circuit.cx(control_qubit.id, target_qubit.id)
+            elif selected_gate.id == "cz":
+                if len(self.qubits) == 2:
+                    control_qubit = self.qubits[0]
+                    target_qubit = self.qubits[1]
+                    self.quantum_circuit.cz(control_qubit.id, target_qubit.id)
+            elif selected_gate.id == "t":
+                self.quantum_circuit.t(qubit.id)
+            elif selected_gate.id == "ccx":
+                if len(self.qubits) == 3:
+                    control_qubit1 = self.qubits[0]
+                    control_qubit2 = self.qubits[1]
+                    target_qubit = self.qubits[2]
+                    self.quantum_circuit.ccx(control_qubit1.id, control_qubit2.id, target_qubit.id)
+            elif selected_gate.id == "cy":
+                if len(self.qubits) == 2:
+                    control_qubit = self.qubits[0]
+                    target_qubit = self.qubits[1]
+                    self.quantum_circuit.x(target_qubit.id)
+                    self.quantum_circuit.cx(control_qubit.id, target_qubit.id)
+                    self.quantum_circuit.x(target_qubit.id)
 
-            backend = Aer.get_backend("statevector_simulator")
-            result = backend.run(self.quantum_circuit).result()
+            simulator = Aer.get_backend('statevector_simulator')
+            job = execute(self.quantum_circuit, simulator)
+            result = job.result()
             psi = result.get_statevector(self.quantum_circuit)
             self.current_state = psi
             self.state_needs_update = True
@@ -88,8 +115,8 @@ class Level:
                 self.inventory[i] = item
                 return
 
-    def plot_bloch_sphere(self, state, label):
-        fig = plot_bloch_multivector(state, figsize=(2,2))
+    def plot_sphere(self, state):
+        fig = plot_state_qsphere(state, show_state_phases=False, figsize=(3,3))
         canvas = agg.FigureCanvasAgg(fig)
         canvas.draw()
         renderer = canvas.get_renderer()
@@ -99,17 +126,25 @@ class Level:
 
     def draw_states(self, screen):
         if self.goal_state_show:
-            self.goal_state_surface = self.plot_bloch_sphere(self.goal_state, "goal")
+            self.goal_state_surface = self.plot_sphere(self.goal_state)
         if self.state_needs_update:
-            self.state_surface = self.plot_bloch_sphere(self.current_state, "current")
+            self.state_surface = self.plot_sphere(self.current_state)
         goal_state_x = (WIDTH + len(self.inventory) * 64) // 2
         current_state_x = (WIDTH - len(self.inventory) * 64) // 2 - self.state_surface.get_width()
-        y_position = HEIGHT - BOTTOM_MARGIN
-
+        y_position = HEIGHT - 264
         screen.blit(self.goal_state_surface, (goal_state_x, y_position))
         screen.blit(self.state_surface, (current_state_x, y_position))
         self.goal_state_show = False
         self.state_needs_update = False
+        screen.blit(self.pacz, (689, 1006))
+        screen.blit(self.pacz, (1308, 1001))
+        font = pygame.font.Font(font_file, 24)
+        state_text = font.render("Current state >", True, MAGENTA)
+        goal_text = font.render("< Goal state", True, GREEN)
+        state_text_x = current_state_x - self.state_surface.get_width()
+        goal_text_x = goal_state_x + self.goal_state_surface.get_width()
+        screen.blit(state_text, (state_text_x, HEIGHT - 160))
+        screen.blit(goal_text, (goal_text_x, HEIGHT - 160))
 
     def draw_poison_bar(self, screen):
         progress_bar_width = 255
@@ -123,6 +158,20 @@ class Level:
         self.poison_alpha += 0.2
         self.poison.set_alpha(self.poison_alpha)
 
-    def is_completed(self):
-        return self.current_state.equiv(self.goal_state)
+    def is_completed(self, screen):
+        decimal_places = 3
+        current_state_rounded = np.round(self.current_state, decimals=decimal_places)
+        goal_state_rounded = np.round(self.goal_state, decimals=decimal_places)
+
+        is_completed = (len(self.gates) <= 0 and
+                all(v is None for v in self.inventory) and
+                np.all(current_state_rounded == goal_state_rounded))
+
+        font = pygame.font.Font(font_file, 24)
+        current_state_x = (WIDTH - len(self.inventory) * 64) // 2 - self.state_surface.get_width()
+        state_text = font.render("Current state >", True, GREEN)
+        state_text_x = current_state_x - self.state_surface.get_width()
+        screen.blit(state_text, (state_text_x, HEIGHT - 160))
+
+        return is_completed
 

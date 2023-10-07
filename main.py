@@ -24,7 +24,7 @@ clock = pygame.time.Clock()
 
 plt.style.use('bloch.mplstyle')
 
-current_level = 2
+current_level = 1
 current_level_data = level_data[current_level]
 level = Level(qubits_num=current_level_data["qubits"],
               gates=current_level_data["gates"],
@@ -74,7 +74,9 @@ def handle_menu_input(selected_option):
     return selected_option, MENU
 
 def is_game_over():
-    return level.poison_alpha >= 255
+    return (level.poison_alpha >= 255 or
+            (len(level.gates) <= 0 and all(v is None for v in level.inventory)) and
+            not level.is_completed(screen))
 
 def reset_level():
     global current_level, current_level_data, level
@@ -96,7 +98,6 @@ def load_next_level():
         game_state = WON
         print("Congratulations! You've completed all levels.")
 
-
 def main():
     global game_state, current_level
     delta_time = 0
@@ -112,6 +113,7 @@ def main():
         if game_state == MENU:
             display_menu(screen, selected_option)
             selected_option, game_state = handle_menu_input(selected_option)
+
         elif game_state == PLAYING:
             keys = pygame.key.get_pressed()
             dx = dy = 0
@@ -144,20 +146,19 @@ def main():
             clock.tick(60)
 
             screen.fill(BLACK)
-            pygame.draw.rect(screen, BLUE, level.box_rect)
+
+            level.draw_inventory(screen)
+            level.draw_states(screen)
             screen.blit(level.box, (BOX_X-184, BOX_Y-164))
+
+            for gate in level.gates:
+                screen.blit(gate.sprite, gate.rect.topleft)
 
             for qubit in level.qubits:
                 qubit.update(delta_time, dx, dy)
                 qubit.draw(screen)
 
-            for gate in level.gates:
-                screen.blit(gate.sprite, gate.rect.topleft)
-
             screen.blit(player.sprite, player.rect.topleft)
-
-            level.draw_inventory(screen)
-            level.draw_states(screen)
 
             if not is_game_over():
                 level.update_poison_color()
@@ -174,17 +175,17 @@ def main():
 
             player.update(delta_time, dx, dy)
 
-            if level.is_completed():
+            if level.is_completed(screen):
                 print("Level completed!")
                 pygame.time.delay(1000)
                 load_next_level()
 
-            if is_game_over() or (len(level.gates) <= 0 and all(v is None for v in level.inventory)):
+            if is_game_over():
                 game_state = DIED
 
         elif game_state == WON:
             font = pygame.font.Font(font_file, 100)
-            text = font.render("YOU WON", True, WHITE)
+            text = font.render("YOU WON", True, BLUE)
             text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             screen.blit(text, text_rect)
             pygame.display.flip()
