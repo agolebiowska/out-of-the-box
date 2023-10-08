@@ -35,7 +35,7 @@ pygame.mixer.music.play(-1)
 
 plt.style.use('bloch.mplstyle')
 
-current_level = 10
+current_level = 1
 current_level_data = level_data[current_level]
 level = Level(qubits_num=current_level_data["qubits"],
               gates=current_level_data["gates"],

@@ -41,6 +41,9 @@ python main.py
 ![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_2.png)
 ![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_3.png)
 
+## Gameplay
+[![Gameplay video](http://img.youtube.com/vi/OIu7boVGb2k/0.jpg)](http://www.youtube.com/watch?v=OIu7boVGb2k "Out of the Box - Gameplay")
+
 ## Possible level solutions
 #### Level 1
 1. X to Q0.
@@ -80,3 +83,14 @@ python main.py
 3. H to Q2.
 4. H to Q3. 
 5. CX to Q0.
+
+### TODOS
+- Big list of possible levels with difficulty and randomly choosing them
+- Increase qubits speed with levels
+- Add items for player to take, like temporary speed, take-back etc.
+- Adjust poison speed per level.
+- Make kitty in the top corner say mean things
+- Make difficulty levels to choose (poison speed)
+- Key numbers under the inventory
+- Indication on which level the player is currently at
+- Better qubits "ai"
