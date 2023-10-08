@@ -14,7 +14,7 @@ As Erwin Schrödinger, you find yourself inside this peculiar quantum box, surro
 
 Each level is a puzzle waiting to be solved. From entanglement enigmas to superposition conundrums, you'll need to apply your understanding of quantum principles to set things right and escape from the clutches of Milton's quantum prank.
 
-<img align="left" alt="erwin" align="center" src="https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/erwin.png" width="40%">
+<img align="left" alt="erwin" align="center" src="https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/erwin.png" width="45%">
 
 ## Rules
 - Each level presents you with a collection of qubits and quantum gates.
@@ -34,6 +34,12 @@ python main.py
 # game has 1920x1080 resolution
 # beware of the music :)
 ```
+
+## Screenshots
+![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_0.png")
+![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_1.png")
+![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_2.png")
+![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_3.png")
 
 ## Possible level solutions
 #### Level 1

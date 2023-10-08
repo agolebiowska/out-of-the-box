@@ -35,7 +35,7 @@ pygame.mixer.music.play(-1)
 
 plt.style.use('bloch.mplstyle')
 
-current_level = 1
+current_level = 10
 current_level_data = level_data[current_level]
 level = Level(qubits_num=current_level_data["qubits"],
               gates=current_level_data["gates"],
@@ -156,6 +156,10 @@ def main():
                             level.use_gate_on_qubit(1, item)
                         elif keys[pygame.K_3]:
                             level.use_gate_on_qubit(2, item)
+                        elif keys[pygame.K_4]:
+                            level.use_gate_on_qubit(3, item)
+                        elif keys[pygame.K_5]:
+                            level.use_gate_on_qubit(4, item)
 
             clock.tick(60)
 
