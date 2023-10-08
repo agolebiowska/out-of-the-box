@@ -123,6 +123,10 @@ def main():
                 running = False
                 pygame.quit()
                 sys.exit()
+            elif event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    game_state = MENU
+                    reset_level()
 
         if game_state == MENU:
             display_menu(screen, selected_option)
