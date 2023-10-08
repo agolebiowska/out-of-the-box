@@ -1,7 +1,7 @@
 # Out of the box
 Game for a Quantum Games Hackathon 2023
 
-<img align="right" alt="cat" align="center" src="https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/milton.png" width="30%">
+<img align="right" alt="cat" align="center" src="https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/milton.png" width="40%">
 
 ## Lore
 You take on the role of Erwin Schrödinger, the renowned physicist who finds himself in the most bizarre predicament of his life.
@@ -13,6 +13,8 @@ Milton, armed with a quantum wand (which may or may not exist), trapped Erwin in
 As Erwin Schrödinger, you find yourself inside this peculiar quantum box, surrounded by zany qubits and your mission, should you choose to accept it (and you have no choice, really), is to harness your physics knowledge and unravel the mysteries of the quantum box.
 
 Each level is a puzzle waiting to be solved. From entanglement enigmas to superposition conundrums, you'll need to apply your understanding of quantum principles to set things right and escape from the clutches of Milton's quantum prank.
+
+<img align="left" alt="erwin" align="center" src="https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/erwin.png" width="40%">
 
 ## Rules
 - Each level presents you with a collection of qubits and quantum gates.
