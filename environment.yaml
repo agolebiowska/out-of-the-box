@@ -1,0 +1,13 @@
+name: out-of-the-box
+
+dependencies:
+  - numpy
+  - pip=20.0.2
+  - python=3.8.10
+  - pip:
+    - matplotlib
+    - pygame==2.5.2
+    - qiskit==0.44.2
+    - qiskit-aer==0.12.2
+    - seaborn==0.13.0
+
