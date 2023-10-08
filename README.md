@@ -1,6 +1,8 @@
 # Out of the box
 Game for a Quantum Games Hackathon 2023
 
+<img align="right" alt="cat" align="center" src="https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/milton.png" width="30%">
+
 ## Lore
 You take on the role of Erwin Schrödinger, the renowned physicist who finds himself in the most bizarre predicament of his life.
 
