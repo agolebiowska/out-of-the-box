@@ -10,14 +10,6 @@ from entities import *
 from globals import *
 from level import Level
 
-# todo:
-# 1. Huge list of possible levels with difficulty and randomly choosing them
-# 2. Increase qubits speed with levels
-# 3. Add items for player to take, like temporary speed, ctrl+z etc.
-# 4. Adjust poison speed per level.
-# 5. Make kitty in the top corner say mean things - maybe wrong tips?
-# 6. Make difficulty levels to choose (poison speed)
-
 MENU = 0
 PLAYING = 1
 WON = 2
@@ -43,19 +35,22 @@ level = Level(qubits_num=current_level_data["qubits"],
 
 player = Player(100, 100, level.box_rect)
 
-menu = pygame.image.load("assets/menu.png")
-menu = pygame.transform.scale(menu, (1920,1080))
+menu = pygame.image.load("assets/menu.png").convert_alpha()
+menu = pygame.transform.scale(menu, (1920, 1080))
 
-kitty_corner = pygame.image.load("assets/kitty_corner.png")
-tail_corner = pygame.image.load("assets/tail_corner.png")
+kitty_corner = pygame.image.load("assets/kitty_corner.png").convert_alpha()
+tail_corner = pygame.image.load("assets/tail_corner.png").convert_alpha()
+
 
 def display_menu(screen, selected_option):
     screen.fill(BLACK)
-    screen.blit(menu, (0,0))
+    screen.blit(menu, (0, 0))
     font = pygame.font.Font(font_file, 50)
     title_font = pygame.font.Font(font_file, 100)
-    start_text = font.render("START", True, PURPLE if selected_option == 0 else WHITE)
-    quit_text = font.render("QUIT", True,  PURPLE if selected_option == 1 else WHITE)
+    start_text = font.render(
+        "START", True, PURPLE if selected_option == 0 else WHITE)
+    quit_text = font.render(
+        "QUIT", True,  PURPLE if selected_option == 1 else WHITE)
     title = title_font.render("Out of the Box", True, WHITE)
     screen_width, screen_height = screen.get_size()
     start_x = (screen_width - start_text.get_width()) // 2
@@ -68,6 +63,7 @@ def display_menu(screen, selected_option):
     screen.blit(start_text, (start_x, start_y))
     screen.blit(quit_text, (quit_x, quit_y))
     pygame.display.flip()
+
 
 def handle_menu_input(selected_option):
     for event in pygame.event.get():
@@ -87,10 +83,12 @@ def handle_menu_input(selected_option):
 
     return selected_option, MENU
 
+
 def is_game_over():
     return (level.poison_alpha >= 255 or
             (len(level.gates) <= 0 and all(v is None for v in level.inventory)) and
             not level.is_completed(screen))
+
 
 def reset_level():
     global current_level, current_level_data, level
@@ -98,6 +96,7 @@ def reset_level():
     level = Level(current_level_data["qubits"],
                   current_level_data["gates"],
                   current_level_data["goal_state"])
+
 
 def load_next_level():
     global current_level, current_level_data, level
@@ -111,6 +110,7 @@ def load_next_level():
         global game_state
         game_state = WON
         print("Congratulations! You've completed all levels.")
+
 
 def main():
     global game_state, current_level
@@ -139,7 +139,7 @@ def main():
             if keys[pygame.K_UP] or keys[pygame.K_w]:
                 dy = -player.move_speed
             if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-                dy = player.move_speed 
+                dy = player.move_speed
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 dx = -player.move_speed
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
@@ -182,14 +182,15 @@ def main():
 
             screen.blit(player.sprite, player.rect.topleft)
             screen.blit(kitty_corner, (0, 0))
-            screen.blit(tail_corner, (WIDTH - tail_corner.get_width(), HEIGHT - tail_corner.get_height()))
+            screen.blit(tail_corner, (WIDTH - tail_corner.get_width(),
+                        HEIGHT - tail_corner.get_height()))
 
             if not is_game_over():
                 level.update_poison_color()
                 level.draw_poison_bar(screen)
-                level.poison_overlay.fill((0,0,0,0))
+                level.poison_overlay.fill((0, 0, 0, 0))
                 level.poison_overlay.blit(level.poison, (0, 0))
-                screen.blit(level.poison_overlay, (0,0))
+                screen.blit(level.poison_overlay, (0, 0))
 
             pygame.display.flip()
 
@@ -214,8 +215,10 @@ def main():
             screen.blit(text, text_rect)
             pygame.display.flip()
             font = pygame.font.Font(font_file, 36)
-            return_text = font.render("Press Enter to return to main menu", True, WHITE)
-            return_text_rect = return_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
+            return_text = font.render(
+                "Press Enter to return to main menu", True, WHITE)
+            return_text_rect = return_text.get_rect(
+                center=(WIDTH // 2, HEIGHT // 2 + 50))
             screen.blit(return_text, return_text_rect)
             pygame.display.flip()
 
@@ -238,7 +241,8 @@ def main():
             pygame.display.flip()
             font = pygame.font.Font(font_file, 36)
             return_text = font.render("Press Enter to restart", True, WHITE)
-            return_text_rect = return_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
+            return_text_rect = return_text.get_rect(
+                center=(WIDTH // 2, HEIGHT // 2 + 50))
             screen.blit(return_text, return_text_rect)
             pygame.display.flip()
 
@@ -252,6 +256,7 @@ def main():
                         reset_level()
 
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()

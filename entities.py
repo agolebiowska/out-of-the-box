@@ -3,12 +3,14 @@ import random
 
 from globals import *
 
+
 class Player:
     def __init__(self, x, y, level_box):
         self.animations = ["down", "left", "right", "up", "idle"]
         self.frames = {animation: [] for animation in self.animations}
-        self.load_frames(pygame.image.load('assets/player.png'))
-        self.move_speed = 7
+        self.load_frames(pygame.image.load(
+            'assets/player.png').convert_alpha())
+        self.move_speed = 5
         self.animation = "idle"
         self.frame_index = 0
         self.sprite = self.frames[self.animation][self.frame_index]
@@ -29,17 +31,22 @@ class Player:
             for col in range(num_cols):
                 x = col * frame_width
                 y = row * frame_height
-                subsurface_width = min(frame_width, sprite_sheet.get_width() - x)
-                subsurface_height = min(frame_height, sprite_sheet.get_height() - y)
-                frame = sprite_sheet.subsurface(pygame.Rect(x, y, subsurface_width, subsurface_height))
-                frame = pygame.transform.scale(frame, (subsurface_width * scale_factor, subsurface_height * scale_factor))
+                subsurface_width = min(
+                    frame_width, sprite_sheet.get_width() - x)
+                subsurface_height = min(
+                    frame_height, sprite_sheet.get_height() - y)
+                frame = sprite_sheet.subsurface(pygame.Rect(
+                    x, y, subsurface_width, subsurface_height))
+                frame = pygame.transform.scale(
+                    frame, (subsurface_width * scale_factor, subsurface_height * scale_factor))
                 self.frames[animation].append(frame)
 
     def update(self, delta_time, dx, dy):
         self.animation_timer += delta_time
         if self.animation_timer >= self.animation_speed:
             self.animation_timer = 0
-            self.frame_index = (self.frame_index + 1) % len(self.frames[self.animation])
+            self.frame_index = (self.frame_index +
+                                1) % len(self.frames[self.animation])
             self.sprite = self.frames[self.animation][self.frame_index]
 
     def move(self, dx, dy):
@@ -62,19 +69,20 @@ class Player:
     def is_colliding(self, items):
         return any(self.rect.colliderect(item.rect) for item in items)
 
+
 class Qubit():
     def __init__(self, id, level_box):
         self.animations = ["down", "left", "right", "up"]
         self.frames = {animation: [] for animation in self.animations}
-        self.load_frames(pygame.image.load('assets/qubit.png'))
-        self.move_speed = 8
+        self.load_frames(pygame.image.load('assets/qubit.png').convert_alpha())
+        self.move_speed = 6
 
         self.animation = random.choice(self.animations)
         self.frame_index = 0
         self.sprite = self.frames[self.animation][self.frame_index]
         self.rect = self.sprite.get_rect()
         self.rect.topleft = self.random_position()
-        self.animation_speed = 0.4
+        self.animation_speed = 0.6
         self.animation_timer = 0
         self.level_box = level_box
         self.id = id
@@ -97,10 +105,14 @@ class Qubit():
             for col in range(num_cols):
                 x = col * frame_width
                 y = row * frame_height
-                subsurface_width = min(frame_width, sprite_sheet.get_width() - x)
-                subsurface_height = min(frame_height, sprite_sheet.get_height() - y)
-                frame = sprite_sheet.subsurface(pygame.Rect(x, y, subsurface_width, subsurface_height))
-                frame = pygame.transform.scale(frame, (subsurface_width * scale_factor, subsurface_height * scale_factor))
+                subsurface_width = min(
+                    frame_width, sprite_sheet.get_width() - x)
+                subsurface_height = min(
+                    frame_height, sprite_sheet.get_height() - y)
+                frame = sprite_sheet.subsurface(pygame.Rect(
+                    x, y, subsurface_width, subsurface_height))
+                frame = pygame.transform.scale(
+                    frame, (subsurface_width * scale_factor, subsurface_height * scale_factor))
                 self.frames[animation].append(frame)
 
     def move(self, dx, dy):
@@ -124,7 +136,8 @@ class Qubit():
         self.animation_timer += delta_time
         if self.animation_timer >= self.animation_speed:
             self.animation_timer = 0
-            self.frame_index = (self.frame_index + 1) % len(self.frames[self.animation])
+            self.frame_index = (self.frame_index +
+                                1) % len(self.frames[self.animation])
             self.sprite = self.frames[self.animation][self.frame_index]
 
         if self.direction == "up":
@@ -149,7 +162,7 @@ class Qubit():
         screen.blit(self.id_text, self.id_text_rect)
 
     def random_position(self):
-        return (random.randint(BOX_X, BOX_X + BOX_WIDTH - 16), 
+        return (random.randint(BOX_X, BOX_X + BOX_WIDTH - 16),
                 random.randint(BOX_Y, BOX_Y + BOX_HEIGHT - 16))
 
 
@@ -158,7 +171,7 @@ class Gate():
         self.id = id
         self.animations = ["idle"]
         self.frames = {animation: [] for animation in self.animations}
-        self.load_frames(pygame.image.load(f'assets/{id}.png'))
+        self.load_frames(pygame.image.load(f'assets/{id}.png').convert_alpha())
         self.animation = "idle"
         self.frame_index = 0
         self.sprite = self.frames[self.animation][self.frame_index]
@@ -175,10 +188,14 @@ class Gate():
             for col in range(num_cols):
                 x = col * frame_width
                 y = row * frame_height
-                subsurface_width = min(frame_width, sprite_sheet.get_width() - x)
-                subsurface_height = min(frame_height, sprite_sheet.get_height() - y)
-                frame = sprite_sheet.subsurface(pygame.Rect(x, y, subsurface_width, subsurface_height))
-                frame = pygame.transform.scale(frame, (subsurface_width * scale_factor, subsurface_height * scale_factor))
+                subsurface_width = min(
+                    frame_width, sprite_sheet.get_width() - x)
+                subsurface_height = min(
+                    frame_height, sprite_sheet.get_height() - y)
+                frame = sprite_sheet.subsurface(pygame.Rect(
+                    x, y, subsurface_width, subsurface_height))
+                frame = pygame.transform.scale(
+                    frame, (subsurface_width * scale_factor, subsurface_height * scale_factor))
                 self.frames[animation].append(frame)
 
     def random_position(self):
