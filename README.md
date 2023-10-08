@@ -36,10 +36,10 @@ python main.py
 ```
 
 ## Screenshots
-![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_0.png")
-![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_1.png")
-![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_2.png")
-![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_3.png")
+![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_0.png)
+![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_1.png)
+![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_2.png)
+![](https://raw.githubusercontent.com/agolebiowska/out-of-the-box/main/assets/screenshot_3.png)
 
 ## Possible level solutions
 #### Level 1
