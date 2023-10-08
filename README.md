@@ -20,6 +20,7 @@ Each level is a puzzle waiting to be solved. From entanglement enigmas to superp
 - Each level presents you with a collection of qubits and quantum gates.
 - Your mission is to **manipulate the qubits using the available quantum gates to reach the specified quantum state** shown as a Q-sphere.
 - Time is of the essence! **Poison is slowly engulfing the screen, and you must complete the level before it takes over**.
+- Player movement with **WSAD** or **UP,LEFT,RIGHT,DOWN keys**
 - After picking up the gate it lands in your inventory. You can then use it by pressing the corresponding key **(1, 2, 3, 4, 5)** to apply the gate on a qubit.
 - Don't be afraid to experiment with different gate combinations to achieve the desired quantum state.
 
