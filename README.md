@@ -85,6 +85,15 @@ python main.py
 4. H to Q3. 
 5. CX to Q0.
 
+### Assets
+- Cat & Erwin generated using app.scenario.com and then edited in Photopea & Aseprite.
+- Player and qubits edited in Aseprite starting from: https://game-endeavor.itch.io/mystic-woods
+- Gates: https://greatdocbrown.itch.io/gamepad-ui
+- Other art created in Photopea & Aseprite.
+- Music: https://pixabay.com/music/scary-childrens-tunes-creepy-devil-dance-166764/
+- Color palette: https://lospec.com/palette-list/pear36
+- Font: https://www.dafont.com/joystix.font
+
 ### TODOS
 - Big list of possible levels with difficulty and randomly choosing them
 - Increase qubits speed with levels
